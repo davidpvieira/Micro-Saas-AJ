@@ -1,0 +1,286 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ==================== AUTH ====================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  role          String    @default("member") // admin | member | viewer
+  accounts      Account[]
+  sessions      Session[]
+  recuperandas  Recuperanda[] @relation("ResponsavelRecuperanda")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ==================== CORE ====================
+
+model Recuperanda {
+  id                String   @id @default(cuid())
+  nome              String
+  cnpj              String?  @unique
+  setor             String   // agronegocio | construcao | transporte
+  comarca           String?
+  vara              String?
+  juiz              String?
+  numeroCNJ         String?  @unique
+  dataDistribuicao  DateTime?
+  statusStay        String   @default("ativo") // ativo | vencido | prorrogado | encerrado
+  dataInicioStay    DateTime?
+  dataFimStay       DateTime?
+  kanbanColuna      String   @default("peticoes_iniciais") // peticoes_iniciais | verificacao_qgc | agc | fiscalizacao | encerramento
+  responsavelId     String?
+  responsavel       User?    @relation("ResponsavelRecuperanda", fields: [responsavelId], references: [id])
+
+  obrigacoes        ObrigacaoLegal[]
+  credores          Credor[]
+  incidentes        Incidente[]
+  honorarios        Honorario[]
+  documentos        DocumentoPendente[]
+  vistorias         Vistoria[]
+  agc               AGC[]
+  moduloRural       ModuloRural?
+  monitoramento     MonitoramentoPJE?
+  advogados         AdvogadoInterlocutor[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model ObrigacaoLegal {
+  id               String    @id @default(cuid())
+  recuperandaId    String
+  recuperanda      Recuperanda @relation(fields: [recuperandaId], references: [id], onDelete: Cascade)
+  descricao        String
+  artigoLegal      String?   // ex: "Art. 22, I, 'a'"
+  status           String    @default("pendente") // pendente | em_andamento | concluido | vencido | ia_pendente
+  dataProtocolo    DateTime?
+  prazoFinal       DateTime?
+  prazoAlertaDias  Int       @default(7)
+  linkDocumento    String?
+  iaExtractedDate  DateTime? // data extraída via Gemini OCR (requer validação humana)
+  iaReliabilityScore Float?  // 0-100 confiabilidade da extração IA
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Credor {
+  id               String    @id @default(cuid())
+  recuperandaId    String
+  recuperanda      Recuperanda @relation(fields: [recuperandaId], references: [id], onDelete: Cascade)
+  nome             String
+  cpfCnpj          String?
+  classe           String    // trabalhista | quirografario | real | me_epp
+  valorDeclarado   Float     @default(0)
+  valorHabilitado  Float?
+  valorAtualizado  Float?
+  dataAtualizacao  DateTime?
+  indiceCorrecao   String?   // ipca_e | selic | tr
+  statusMediacao   String    @default("sem_proposta") // sem_proposta | proposta_enviada | em_negociacao | acordo_fechado
+  mensagens        MensagemMediacao[]
+  incidentes       Incidente[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model MensagemMediacao {
+  id              String    @id @default(cuid())
+  credorId        String
+  credor          Credor    @relation(fields: [credorId], references: [id], onDelete: Cascade)
+  texto           String    @db.Text
+  dataSolicitacao DateTime  @default(now())
+  statusResposta  String    @default("pendente") // pendente | respondida | encaminhada
+  resposta        String?   @db.Text
+  dataResposta    DateTime?
+  createdAt       DateTime  @default(now())
+}
+
+model Incidente {
+  id               String    @id @default(cuid())
+  recuperandaId    String
+  recuperanda      Recuperanda @relation(fields: [recuperandaId], references: [id], onDelete: Cascade)
+  credorId         String?
+  credor           Credor?   @relation(fields: [credorId], references: [id])
+  numeroProcesso   String?
+  tipo             String    // habilitacao | impugnacao
+  status           String    @default("pendente") // pendente | pericia | sentenca | encerrado
+  valorPretendido  Float?
+  observacoes      String?   @db.Text
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Honorario {
+  id                   String    @id @default(cuid())
+  recuperandaId        String
+  recuperanda          Recuperanda @relation(fields: [recuperandaId], references: [id], onDelete: Cascade)
+  valorTotal           Float
+  valorParcela         Float
+  parcelaAtual         Int       @default(1)
+  totalParcelas        Int
+  status               String    @default("em_dia") // em_dia | atrasado | pago
+  dataProximoPagamento DateTime?
+  diasAtraso           Int       @default(0)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+model DocumentoPendente {
+  id               String    @id @default(cuid())
+  recuperandaId    String
+  recuperanda      Recuperanda @relation(fields: [recuperandaId], references: [id], onDelete: Cascade)
+  categoria        String    // contabil | juridico | operacional | fisico
+  descricao        String
+  artigoReferencia String?   // ex: "Art. 51, LRF"
+  status           String    @default("pendente") // pendente | recebido | em_analise | aprovado
+  prazo            DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Vistoria {
+  id              String    @id @default(cuid())
+  recuperandaId   String
+  recuperanda     Recuperanda @relation(fields: [recuperandaId], references: [id], onDelete: Cascade)
+  dataVistoria    DateTime
+  observacoes     String?   @db.Text
+  fotoLinks       String?   @db.Text // JSON array of photo URLs
+  proximaVisita   DateTime?
+  status          String    @default("agendada") // agendada | realizada | cancelada
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model AGC {
+  id                   String    @id @default(cuid())
+  recuperandaId        String
+  recuperanda          Recuperanda @relation(fields: [recuperandaId], references: [id], onDelete: Cascade)
+  dataPrimeiraChamada  DateTime?
+  dataSegundaChamada   DateTime?
+  statusEdital         String    @default("pendente") // pendente | publicado | encerrado
+  parceiroSandrini     Boolean   @default(false)
+  statusAta            String    @default("pendente") // pendente | rascunho | finalizada | homologada
+  quorumPresente       Float?    // percentual 0-100
+  etapaAtual           String    @default("procuracoes") // procuracoes | quorum | edital | primeira_chamada | segunda_chamada | ata
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+// ==================== RURAL ====================
+
+model ModuloRural {
+  id              String    @id @default(cuid())
+  recuperandaId   String    @unique
+  recuperanda     Recuperanda @relation(fields: [recuperandaId], references: [id], onDelete: Cascade)
+  fazendas        Fazenda[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Fazenda {
+  id                   String    @id @default(cuid())
+  moduloRuralId        String
+  moduloRural          ModuloRural @relation(fields: [moduloRuralId], references: [id], onDelete: Cascade)
+  nome                 String
+  municipio            String?
+  areaHectares         Float?
+  geoLinkMaps          String?
+  latLng               String?   // "lat,lng" para AgroAPI/ClimAPI
+  statusFitossanitario String    @default("verde") // verde | amarelo | vermelho
+  cicloSafra           String?   // ex: "2025/2026"
+  progressoSafra       Float?    @default(0) // 0-100
+  creditosCPR          Float?
+  linkLaudoEngenheiro  String?
+  linkLaudoSatelite    String?
+  historiaClimatica    String?   @db.Text // JSON cache de dados climáticos
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+// ==================== MONITORAMENTO PJE ====================
+
+model MonitoramentoPJE {
+  id                  String    @id @default(cuid())
+  recuperandaId       String    @unique
+  recuperanda         Recuperanda @relation(fields: [recuperandaId], references: [id], onDelete: Cascade)
+  numeroCNJ           String    @unique
+  tribunal            String
+  ultimaMovimentacao  DateTime?
+  webhookUrl          String?
+  ativo               Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+}
+
+// ==================== CRM ====================
+
+model AdvogadoInterlocutor {
+  id              String    @id @default(cuid())
+  nome            String
+  oab             String?
+  banca           String?
+  telefone        String?
+  email           String?
+  especialidade   String?
+  tipo            String    // advogado_recuperanda | advogado_credor | perito | outro
+  recuperandaId   String?
+  recuperanda     Recuperanda? @relation(fields: [recuperandaId], references: [id])
+  interacoes      InteracaoCRM[]
+  createdAt       DateTime  @default(now())
+}
+
+model InteracaoCRM {
+  id              String    @id @default(cuid())
+  advogadoId      String
+  advogado        AdvogadoInterlocutor @relation(fields: [advogadoId], references: [id], onDelete: Cascade)
+  data            DateTime
+  tipo            String    // reuniao | ligacao | email | audiencia
+  resumo          String    @db.Text
+  proximaAcao     String?
+  createdAt       DateTime  @default(now())
+}

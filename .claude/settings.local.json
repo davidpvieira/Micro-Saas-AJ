@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(export PATH=\"$PATH:/c/Program Files/nodejs:/c/Users/David/AppData/Roaming/npm\")",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Program Files \\(x86\\)/**)",
+      "Bash(where.exe node:*)",
+      "Bash(cmd.exe /c \"where node\")",
+      "Bash(powershell.exe -Command \"Get-Command node -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source\")",
+      "Bash(powershell.exe -Command \"Get-ChildItem 'C:\\\\Program Files\\\\nodejs\\\\node.exe' -ErrorAction SilentlyContinue; Get-ChildItem 'C:\\\\Users\\\\David\\\\AppData\\\\Roaming\\\\nvm\\\\*\\\\node.exe' -ErrorAction SilentlyContinue; Get-ChildItem 'C:\\\\Users\\\\David\\\\.nvm\\\\*\\\\node.exe' -ErrorAction SilentlyContinue; Get-ChildItem 'C:\\\\nvm\\\\*\\\\node.exe' -ErrorAction SilentlyContinue; Get-ChildItem 'C:\\\\nodejs\\\\node.exe' -ErrorAction SilentlyContinue\")",
+      "Bash(powershell.exe -Command \"Get-ChildItem -Path 'C:\\\\' -Filter 'node.exe' -Recurse -Depth 4 -ErrorAction SilentlyContinue | Select-Object -First 5 -ExpandProperty FullName\")",
+      "Bash(powershell.exe -Command '$env:PATH -split '\\\\'';'\\\\'' | ForEach-Object { if \\(Test-Path \\(Join-Path $_ '\\\\''node.exe'\\\\''\\)\\) { Join-Path $_ '\\\\''node.exe'\\\\'' } }')",
+      "Bash(winget --version)",
+      "Bash(powershell.exe -Command \"winget --version\")",
+      "Bash(powershell.exe -Command \"winget install OpenJS.NodeJS.LTS --accept-package-agreements --accept-source-agreements\")",
+      "Bash(export PATH=\"/c/Program Files/nodejs:$PATH\")",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git --use-npm)",
+      "Bash(npm init:*)",
+      "Bash(sed -i 's/\"name\": \"SAAS AJ\"/\"name\": \"micro-saas-aj\"/' package.json)",
+      "Read(//c/Users/David/OneDrive/Desktop/**)",
+      "Bash(rm -f \"/c/Users/David/OneDrive/Desktop/SAAS AJ/package.json\")",
+      "Bash(npx create-next-app@latest micro-saas-aj --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git --use-npm)",
+      "Bash(cp -r \"/c/Users/David/OneDrive/Desktop/micro-saas-aj/\"* \"/c/Users/David/OneDrive/Desktop/SAAS AJ/\")",
+      "Bash(cp -r \"/c/Users/David/OneDrive/Desktop/micro-saas-aj/\".* \"/c/Users/David/OneDrive/Desktop/SAAS AJ/\")",
+      "Bash(rm -rf \"/c/Users/David/OneDrive/Desktop/micro-saas-aj\")",
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest init -d --no-deps)",
+      "Bash(npx shadcn@latest init -d)",
+      "Bash(npx shadcn@latest add card badge table tabs dialog sheet select input label textarea form dropdown-menu popover calendar progress toast alert separator skeleton avatar command tooltip -y)",
+      "Bash(npx shadcn@latest add sonner -y)",
+      "Bash(git config:*)"
+    ]
+  }
+}
