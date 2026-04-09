@@ -29,7 +29,21 @@
       "Bash(npx shadcn@latest init -d)",
       "Bash(npx shadcn@latest add card badge table tabs dialog sheet select input label textarea form dropdown-menu popover calendar progress toast alert separator skeleton avatar command tooltip -y)",
       "Bash(npx shadcn@latest add sonner -y)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npm run:*)",
+      "Bash(powershell.exe -Command \"Get-Process -Id \\(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue\\).OwningProcess -ErrorAction SilentlyContinue | Stop-Process -Force\")",
+      "Bash(mkdir -p \"C:/Users/David/OneDrive/Desktop/SAAS AJ/src/app/api/recuperandas/[id]/kanban\")",
+      "Bash(mkdir -p \"C:/Users/David/OneDrive/Desktop/SAAS AJ/src/app/api/credores/[id]\")",
+      "Bash(mkdir -p \"C:/Users/David/OneDrive/Desktop/SAAS AJ/src/app/api/obrigacoes/[id]\")",
+      "Bash(mkdir -p \"C:/Users/David/OneDrive/Desktop/SAAS AJ/src/app/api/honorarios/[id]/registrar-pagamento\")",
+      "Bash(mkdir -p \"C:/Users/David/OneDrive/Desktop/SAAS AJ/src/app/api/documentos/[id]\")",
+      "Bash(mkdir -p \"C:/Users/David/OneDrive/Desktop/SAAS AJ/src/app/\\(authenticated\\)/processos/[id]/credores\")",
+      "Bash(mkdir -p \"C:/Users/David/OneDrive/Desktop/SAAS AJ/src/app/\\(authenticated\\)/processos/[id]/documentos\")",
+      "Bash(mkdir -p \"C:/Users/David/OneDrive/Desktop/SAAS AJ/src/app/\\(authenticated\\)/processos/[id]/honorarios\")",
+      "Bash(mkdir -p \"C:/Users/David/OneDrive/Desktop/SAAS AJ/src/app/\\(authenticated\\)/processos/[id]/vistorias\")",
+      "Bash(mkdir -p \"C:/Users/David/OneDrive/Desktop/SAAS AJ/src/app/\\(authenticated\\)/processos/[id]/agc\")",
+      "Bash(npx prisma:*)"
     ]
   }
 }
